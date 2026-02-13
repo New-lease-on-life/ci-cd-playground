@@ -78,7 +78,7 @@ jobs:
           fi
 
           # 2. 파일 내용 읽기
-          COMPOSE_CONTENT=$(cat docker-compose.yml)
+          COMPOSE_CONTENT=$(cat docker-compose.yml | base64 -w 0)
           
           # 3. SSM으로 전송 (cat << "EOF" 방식 사용)
           aws ssm send-command \
