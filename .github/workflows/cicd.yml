@@ -72,13 +72,19 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # 2. AWS CLI를 이용한 SSM 명령 전송 (가장 확실한 방법)
       - name: Deploy to EC2 via SSM
         run: |
-          # 1. 파일 내용을 변수에 저장 (싱글 쿼트로 감싸서 특수문자 방어)
+          # 1. 파일이 존재하는지 먼저 확인 (에러 방지)
+          if [ ! -f "docker-compose.yml" ]; then
+            echo "❌ Error: docker-compose.yml 파일을 찾을 수 없습니다!"
+            ls -R # 디버깅을 위해 파일 목록 출력
+            exit 1
+          fi
+
+          # 2. 파일 내용을 변수에 저장
           COMPOSE_CONTENT=$(cat docker-compose.yml)
           
-          # 2. SSM 명령어 전송
+          # 3. SSM 명령어 전송 (이전과 동일)
           aws ssm send-command \
             --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
@@ -86,7 +92,6 @@ jobs:
             --parameters "commands=[
               'mkdir -p /home/ubuntu/cicd',
               'cd /home/ubuntu/cicd',
-              # [수정된 부분] 파일을 안전하게 생성하는 문법
               'cat << \"EOF\" > docker-compose.yml',
               \"$COMPOSE_CONTENT\",
               'EOF',
