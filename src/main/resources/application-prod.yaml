@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: demo-BE
+
+  datasource:
+    # 환경 변수 DB_URL이 없으면 localhost의 your_database_name 사용
+    url: ${DB_URL:jdbc:mysql://localhost:3306/your_database_name?serverTimezone=Asia/Seoul&characterEncoding=UTF-8}
+    # 환경 변수 DB_USERNAME이 없으면 root 사용
+    username: ${DB_USERNAME:root}
+    # 환경 변수 DB_PASSWORD가 없으면 your_password 사용
+    password: ${DB_PASSWORD:your_password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL:update}
+    show-sql: ${JPA_SHOW_SQL:true}
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
