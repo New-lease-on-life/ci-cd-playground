@@ -1,26 +1,39 @@
+version: '3.8'
+
 services:
+  app:
+    container_name: spring-app
+    # GitHub Actions에서 빌드해서 올린 ECR 이미지 주소를 사용하게 됨
+    image: ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env  # 깃허브 액션이 생성해줄 파일
+    depends_on:
+      - db
+    networks:
+      - my-network
+
   db:
-    image: mysql:8.0
     container_name: mysql-db
+    image: mysql:8.0
     restart: always
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - '3306:3306'
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 10s
-      retries: 5
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql # 데이터 영속성 보장
+    networks:
+      - my-network
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 
-  app:
-    build: .
-    container_name: spring-app
-    restart: always
-    ports:
-      - '8080:8080'
-    env_file:
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy
+networks:
+  my-network:
+    driver: bridge
+
+volumes:
+  db_data:
