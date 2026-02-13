@@ -61,8 +61,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ steps.login-ecr.outputs.registry }}/my-server-app:latest
-            ${{ steps.login-ecr.outputs.registry }}/my-server-app:${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/my-spring-boot-app_2_13:latest
+            ${{ steps.login-ecr.outputs.registry }}/my-spring-boot-app_2_13:${{ github.sha }}
 
   # =========================================================
   # JOB 2: AWS EC2 배포 (CD 단계)
