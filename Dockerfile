@@ -11,11 +11,13 @@ COPY build.gradle settings.gradle ./
 
 # 실행 권한 부여 및 의존성 다운로드
 RUN chmod +x ./gradlew
+# [중요] gradle dependencies -> ./gradlew dependencies
 RUN ./gradlew dependencies --no-daemon
 
 # 이제 소스 코드를 복사하고 빌드합니다.
 COPY src ./src
-RUN gradle clean bootJar --no-daemon
+# [중요] gradle clean bootJar -> ./gradlew clean bootJar
+RUN ./gradlew clean bootJar --no-daemon
 
 # --------------------------------------------------------
 # 2단계: 실행 환경 (Runner) - 완성된 요리만 서빙합니다.
