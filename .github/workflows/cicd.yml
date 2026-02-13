@@ -5,27 +5,24 @@ on:
     branches: ["main"]
   pull_request:
     branches: ["main"]
-  workflow_dispatch: # 수동 실행 버튼 활성화
+  workflow_dispatch:
 
-# 전역 권한 설정: OIDC 인증을 위해 반드시 필요
 permissions:
   id-token: write
   contents: read
 
 env:
   AWS_REGION: ap-northeast-2
-  ECR_REPOSITORY: my-spring-boot-app_2_13  # ECR 레포지토리 이름
-  IMAGE_TAG: ${{ github.sha }}        # 커밋 해시를 태그로 사용
+  ECR_REPOSITORY: my-spring-boot-app_2_13
+  IMAGE_TAG: ${{ github.sha }}
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
-      # 1. 코드 체크아웃
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      # 2. JDK 17 설정 및 캐싱 (Temurin 분배판 사용)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -33,25 +30,21 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
-      # 3. Gradle 빌드 (테스트 제외하고 JAR만 빠르게 생성)
       - name: Build with Gradle
         run: |
           chmod +x gradlew
           ./gradlew clean bootJar -x test
 
-      # 4. AWS 자격 증명 구성 (OIDC 방식)
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }} # arn:aws:iam::... 형태의 전체 Role ARN
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # 5. Amazon ECR 로그인
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # 6. Docker 이미지 빌드 및 ECR 푸시 (최적화된 방식)
       - name: Build and Push to ECR
         uses: docker/build-push-action@v5
         with:
@@ -65,7 +58,10 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      # 1. AWS 자격 증명 (배포 명령을 내리기 위한 인증)
+      # [✅ 핵심 수정] 배포 Job에서도 코드를 내려받아야 docker-compose.yml을 읽을 수 있습니다.
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -74,17 +70,17 @@ jobs:
 
       - name: Deploy to EC2 via SSM
         run: |
-          # 1. 파일이 존재하는지 먼저 확인 (에러 방지)
+          # 1. 파일 확인 (이제 Checkout을 했으니 파일이 있을 겁니다)
           if [ ! -f "docker-compose.yml" ]; then
             echo "❌ Error: docker-compose.yml 파일을 찾을 수 없습니다!"
-            ls -R # 디버깅을 위해 파일 목록 출력
+            ls -R
             exit 1
           fi
 
-          # 2. 파일 내용을 변수에 저장
+          # 2. 파일 내용 읽기
           COMPOSE_CONTENT=$(cat docker-compose.yml)
           
-          # 3. SSM 명령어 전송 (이전과 동일)
+          # 3. SSM으로 전송 (cat << "EOF" 방식 사용)
           aws ssm send-command \
             --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
