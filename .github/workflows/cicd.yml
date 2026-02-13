@@ -103,7 +103,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           # GitHub Actions가 흉내 낼(Assume) IAM 역할의 ARN 주소
-          role-to-assume: ${{ secrets.ROLE-TO-ASSUME }}
+          role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
           aws-region: ap-northeast-2 # 한국 리전
 
       # (2) AWS SSM(Systems Manager)을 통해 EC2 내부로 명령어를 원격 전송합니다.
