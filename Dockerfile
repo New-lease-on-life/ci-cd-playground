@@ -4,10 +4,14 @@
 FROM eclipse-temurin:17-jdk AS builder
 WORKDIR /app
 
-# 캐싱 효율을 위해 의존성 파일(build.gradle)만 먼저 복사해서 다운로드 받습니다.
-# 소스 코드가 바뀌어도 라이브러리 다운로드는 스킵할 수 있어 빌드가 빨라집니다.
+# Wrapper 실행에 필요한 파일들을 먼저 복사
+COPY gradlew .
+COPY gradle gradle
 COPY build.gradle settings.gradle ./
-RUN gradle dependencies --no-daemon
+
+# 실행 권한 부여 및 의존성 다운로드
+RUN chmod +x ./gradlew
+RUN ./gradlew dependencies --no-daemon
 
 # 이제 소스 코드를 복사하고 빌드합니다.
 COPY src ./src
