@@ -116,6 +116,7 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --parameters 'commands=[
               "cd /home/ubuntu/cicd",
+              # 1. .env 파일 생성
               "echo \"${{ secrets.ENV_PROPERTIES }}\" > .env",
               "chmod 600 .env",
               "docker-compose pull",
