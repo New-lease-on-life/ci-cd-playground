@@ -80,8 +80,8 @@ jobs:
           context: .      # Dockerfile이 있는 위치 (현재 폴더)
           push: true      # 빌드 후 바로 푸시할 것인지 여부
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/my-spring-boot-app_2_13:latest
-            ${{ secrets.DOCKER_USERNAME }}/my-spring-boot-app_2_13:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/my-spring-boot-app:latest
+            ${{ secrets.DOCKER_USERNAME }}/my-spring-boot-app:${{ github.sha }}
 
   # =========================================================
   # JOB 2: AWS EC2 배포 (CD 단계)
