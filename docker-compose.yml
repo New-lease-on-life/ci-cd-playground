@@ -1,19 +1,24 @@
 version: '3.8'
 
 services:
+  # [1] Spring Boot App Service
   app:
     container_name: spring-app
-    # GitHub Actions에서 빌드 해서 도커 허브에 올릴꺼임.
-    image: ${DOCKER_USERNAME}/my-spring-boot-app:latest
+    # 중요: GitHub Actions에서 푸시한 이미지 주소를 적어야 합니다.
+    # 예: your-docker-id/repo-name:latest
+    image: ${{ secrets.DOCKER_USERNAME }}/my-spring-boot-app_2_13:latest 
+    restart: always
     ports:
       - "8080:8080"
     env_file:
-      - .env  # 깃허브 액션이 생성해줄 파일
+      - .env
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - my-network
 
+  # [2] Database Service (기존 유지)
   db:
     container_name: mysql-db
     image: mysql:8.0
@@ -26,10 +31,15 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - db_data:/var/lib/mysql # 데이터 영속성 보장
+      - db_data:/var/lib/mysql
     networks:
       - my-network
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 networks:
   my-network:
