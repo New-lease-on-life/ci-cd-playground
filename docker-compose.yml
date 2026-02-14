@@ -6,7 +6,7 @@ services:
     container_name: spring-app
     # 중요: GitHub Actions에서 푸시한 이미지 주소를 적어야 합니다.
     # 예: your-docker-id/repo-name:latest
-    image: ${DOCKER_USERNAME}/my-spring-boot-app:latest 
+    image: ${DOCKER_USERNAME}/my-spring-boot-app:latest
     restart: always
     ports:
       - "8080:8080"
