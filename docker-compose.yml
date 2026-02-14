@@ -3,8 +3,8 @@ version: '3.8'
 services:
   app:
     container_name: spring-app
-    # GitHub Actions에서 빌드해서 올린 ECR 이미지 주소를 사용하게 됨
-    image: ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest
+    # GitHub Actions에서 빌드 해서 도커 허브에 올릴꺼임.
+    image: ${DOCKER_USERNAME}/my-spring-boot-app:latest
     ports:
       - "8080:8080"
     env_file:
